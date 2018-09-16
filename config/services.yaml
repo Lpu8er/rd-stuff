@@ -29,3 +29,12 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    discord:
+        class: App\Service\Discord
+        arguments:
+            $uri: '%env(DISCORD_URL)%'
+            $scope: '%env(DISCORD_BOT_SCOPE)%'
+            $permissions: '%env(DISCORD_BOT_PERMISSIONS)%'
+            $clientId: '%env(DISCORD_BOT_CLIENTID)%'
+    
+    App\Service\Discord: '@discord'
