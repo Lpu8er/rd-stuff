@@ -24,7 +24,7 @@
         "symfony/yaml": "*"
     },
     "require-dev": {
-        "sensiolabs/security-checker": "^4.1",
+        "sensiolabs/security-checker": "^5",
         "symfony/debug-pack": "*",
         "symfony/dotenv": "*",
         "symfony/maker-bundle": "^1.0",
