@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RatchetServer extends Command {
 
     protected $socketService = null;
-
+    
     public function __construct(RatchetSocket $socketService) {
         $this->socketService = $socketService;
         parent::__construct();
