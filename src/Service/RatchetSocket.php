@@ -2,10 +2,14 @@
 namespace App\Service;
 
 use Exception;
+use GuzzleHttp\Psr7\Request;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
-
+use SplObjectStorage;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken;
 
 /**
  * Description of RatchetSocket
@@ -19,21 +23,23 @@ class RatchetSocket implements MessageComponentInterface {
     
     protected $clients = null; // temp memory storage
     
-    public function __construct(Security $securityService, \Symfony\Component\HttpFoundation\Session\SessionInterface $sessionService, \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface $tokenService) {
+    public function __construct(Security $securityService, SessionInterface $sessionService, TokenStorageInterface $tokenService) {
         $this->securityService = $securityService;
         $this->sessionService = $sessionService;
         $this->tokenService = $tokenService;
-        $this->clients = new \SplObjectStorage();
+        $this->clients = new SplObjectStorage();
+        
+        
     }
     
-    protected function loadSession(\GuzzleHttp\Psr7\Request $request) {
+    protected function loadSession(Request $request) {
         $token = $this->getAuthToken($request);
         if(!empty($token)) {
             $this->tokenService->setToken($token); // will propagate an event
         }
     }
     
-    protected function getAuthToken(\GuzzleHttp\Psr7\Request $request): ?\Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken {
+    protected function getAuthToken(Request $request): ?PostAuthenticationGuardToken {
         $returns = null;
         if($request->hasHeader('Cookie')) {
             $sessionId = preg_replace('`^PHPSESSID=(.+)$`', '$1', $request->getHeader('Cookie')[0]);

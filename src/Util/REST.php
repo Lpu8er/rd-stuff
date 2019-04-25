@@ -15,6 +15,58 @@ class REST {
     const METHOD_PUT = 'PUT';
     
     /**
+     * 
+     * @param string $base
+     * @param string $uri
+     * @param string $method
+     * @param array $data
+     * @param array $headers
+     * @param array $options
+     * @param bool $json
+     * @return RESTResponse
+     */
+    public static function instant(string $base, string $uri, string $method = null, array $data = [], array $headers = [], array $options = [], bool $json = false) {
+        $cls = get_called_class();
+        $rest = new $cls($base);
+        $rest->setUri($uri);
+        if(!empty($method)) {
+            $rest->setMethod($method);
+        }
+        foreach($data as $k => $v) {
+            $rest->setData($k, $v);
+        }
+        foreach($headers as $k => $v) {
+            $rest->addHeader($k, $v);
+        }
+        foreach($options as $k => $v) {
+            $rest->setOption($k, $v);
+        }
+        if($json) {
+            $rest->enableJson();
+        } else {
+            $rest->disableJson();
+        }
+        $returns = $rest->call();
+        // flush
+        unset($rest);
+        return $returns;
+    }
+    
+    /**
+     * 
+     * @param string $base
+     * @param string $uri
+     * @param string $method
+     * @param array $data
+     * @param array $headers
+     * @param array $options
+     * @return RESTResponse
+     */
+    public static function json(string $base, string $uri, string $method = null, array $data = [], array $headers = [], array $options = []) {
+        return static::instant($base, $uri, $method, $data, $headers, $options, true);
+    }
+    
+    /**
      *
      * @var type 
      */
@@ -179,9 +231,11 @@ class REST {
         curl_setopt($ch, CURLOPT_URL, $uri);
         // headers
         if(!empty($this->headers)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array_map(function($k, $v){
-                return $k.': '.is_scalar($v)? $v:implode(' ', $v);
-            }, array_keys($this->headers), $this->headers));
+            $shs = [];
+            foreach($this->headers as $k => $v) {
+                $shs[] = $k.': '.(is_scalar($v)? $v:implode(' ', $v));
+            }
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $shs);
         }
         // response headers
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, [$this, 'storeResponseHeader']);
@@ -194,7 +248,7 @@ class REST {
         $infos = curl_getinfo($ch);
         $this->response->setCode($infos['http_code']);
         if($this->jsonReceive || (false !== strpos('json', $this->response->getHeader('Content-Type', '')))) {
-            $this->response->setContent(json_decode($res));
+            $this->response->setContent(json_decode($res, true));
         } else {
             $this->response->setContent($res);
         }

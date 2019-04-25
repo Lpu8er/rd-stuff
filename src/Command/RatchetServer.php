@@ -19,8 +19,11 @@ class RatchetServer extends Command {
 
     protected $socketService = null;
     
-    public function __construct(RatchetSocket $socketService) {
+    protected $discordService = null;
+    
+    public function __construct(RatchetSocket $socketService, \App\Service\Discord $discordService) {
         $this->socketService = $socketService;
+        $this->discordService = $discordService;
         parent::__construct();
     }
 
@@ -29,12 +32,10 @@ class RatchetServer extends Command {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
+        $ws = new WsServer($this->socketService);
+        
         IoServer::factory(
-                new HttpServer(
-                        new WsServer(
-                                $this->socketService
-                        )
-                ),
+                new HttpServer($ws),
                 8080
         )->run();
     }

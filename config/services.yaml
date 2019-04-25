@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    
 
 services:
     # default configuration for services in *this* file
@@ -32,9 +33,9 @@ services:
         class: App\Service\Discord
         arguments:
             $uri: '%env(DISCORD_URL)%'
+            $token: '%env(DISCORD_TOKEN)%'
             $scope: '%env(DISCORD_BOT_SCOPE)%'
-            $permissions: '%env(DISCORD_BOT_PERMISSIONS)%'
-            $clientId: '%env(DISCORD_BOT_CLIENTID)%'
+            $channel: '%env(DISCORD_BOT_CHANNEL)%'
     
     App\Service\Discord: '@discord'
     
