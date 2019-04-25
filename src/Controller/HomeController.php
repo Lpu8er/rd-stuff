@@ -16,7 +16,7 @@ class HomeController extends Controller {
      * @Route("/")
      * 
      */
-    public function home(Request $request) {
+    public function home(Request $request, \Psr\Log\LoggerInterface $logger) {
         return $this->render('home.html.twig');
     }
 }

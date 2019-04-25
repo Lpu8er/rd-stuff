@@ -38,3 +38,11 @@ services:
             $clientId: '%env(DISCORD_BOT_CLIENTID)%'
     
     App\Service\Discord: '@discord'
+    
+    esocket:
+        class: App\Service\ExperimentSocket
+        arguments:
+            $magic: '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+    
+    App\Service\ExperimentSocket: '@esocket'
+    
