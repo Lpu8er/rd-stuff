@@ -36,6 +36,8 @@ class RatchetSocket implements MessageComponentInterface {
     
     public function onMessage(ConnectionInterface $from, $msg) {
         echo 'receieved : '.$msg.' from '.$from->resourceId;
+        $req = $from->httpRequest;
+        var_dump($req);
         foreach($this->clients as $c) {
             if($c !== $from) {
                 $c->send($msg);
