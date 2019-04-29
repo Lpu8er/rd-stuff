@@ -10,10 +10,12 @@ use App\Service\Discord;
  */
 class DiscordGimmeCommand extends DiscordCommand {
     public function help(Discord $discordService) {
+        $hs = [];
         foreach($discordService->getGiveableRolesNames() as $rn) {
             $rns = explode(' ', $rn);
-            $discordService->talk('`.gimme '.$rns[1].'` give role '.$rn, $this->data['channel_id']);
+            $hs[] = '`.gimme '.$rns[1].'` give role '.$rn;
         }
+        $discordService->talk(implode(PHP_EOL, $hs), $this->data['channel_id']);
     }
     
     public function execute(Discord $discordService) {

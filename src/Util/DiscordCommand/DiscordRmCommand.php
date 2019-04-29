@@ -10,10 +10,12 @@ use App\Service\Discord;
  */
 class DiscordRmCommand extends DiscordCommand {
     public function help(Discord $discordService) {
+        $hs = [];
         foreach($discordService->getGiveableRolesNames() as $rn) {
             $rns = explode(' ', $rn);
-            $discordService->talk('`.rm '.$rns[1].'` remove role '.$rn, $this->data['channel_id']);
+            $hs[] = '`.rm '.$rns[1].'` remove role '.$rn;
         }
+        $discordService->talk(implode(PHP_EOL, $hs), $this->data['channel_id']);
     }
     
     public function execute(Discord $discordService) {
