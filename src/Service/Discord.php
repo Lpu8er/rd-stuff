@@ -9,6 +9,8 @@ use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\EventLoop\Factory;
 use React\Socket\Connector as ReactConnector;
 
+use App\Util\DiscordCommand as DiscordCommands;
+
 /**
  * Description of Discord
  *
@@ -290,7 +292,7 @@ class Discord {
         $matches = [];
         if(!$data['tts']
                 && (empty($this->channel) || ($data['channel_id'] === $this->channel))
-                && preg_match('`^\.([a-zA-Z0-9-]+)(( +)(.+))?$`', $data['content'], $matches)) { // @TODO better includes of "." as joker
+                && preg_match('`^\.([a-zA-Z0-9]+)(( +)(.+))?$`', $data['content'], $matches)) { // @TODO better includes of "." as joker
             $this->parseCommand($matches[1], empty($matches[4])? []:explode(' ', $matches[4]), $data);
         }
     }
@@ -303,23 +305,20 @@ class Discord {
      */
     protected function parseCommand(string $cmd, array $args, array $pureData) {
         if(in_array($cmd, $this->allowedCommands)) {
-            $mn = 'doCmd'.ucfirst($cmd);
-            if(method_exists($this, $mn)) {
-                $this->$mn($args, $pureData);
-            } else {
-                $this->talk('Unimplemented command "'.$cmd.'"');
+            try {
+                $o = DiscordCommands\DiscordCommand::load($cmd, $args, $pureData);
+                if(!empty($o)) {
+                    $o->execute($this);
+                } else {
+                    $this->talk('Unimplemented command `'.$cmd.'`');
+                }
+            } catch (Exception $ex) {
+                var_dump($ex->getMessage());
+                $this->talk('An error occured, please retry later', $pureData['channel_id']);
             }
         } else {
-            $this->talk('Unrecognized command "'.$cmd.'"');
+            $this->talk('Unrecognized command `'.$cmd.'`');
         }
-    }
-    
-    protected function doCmdHello(array $args) {
-        $this->talk('Hello world');
-    }
-    
-    protected function doCmdHelp(array $args) {
-        $this->talk('Help yourself, for now.');
     }
     
     /**
@@ -327,7 +326,7 @@ class Discord {
      * @param mixed $msg
      * @param ?string $channel
      */
-    protected function talk($msg, $channel = null) {
+    public function talk($msg, $channel = null) {
         if(empty($channel)) { $channel = $this->channel; }
         $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
             'content' => $msg,
