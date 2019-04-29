@@ -304,7 +304,7 @@ class Discord {
      * @param array $pureData
      */
     protected function parseCommand(string $cmd, array $args, array $pureData) {
-        if(in_array($cmd, $this->allowedCommands)) {
+        if($this->isAllowedCommand($cmd)) {
             try {
                 $o = DiscordCommands\DiscordCommand::load($cmd, $args, $pureData);
                 if(!empty($o)) {
@@ -319,6 +319,15 @@ class Discord {
         } else {
             $this->talk('Unrecognized command `'.$cmd.'`');
         }
+    }
+    
+    /**
+     * 
+     * @param string $cmd
+     * @return bool
+     */
+    public function isAllowedCommand(string $cmd): bool {
+        return in_array($cmd, $this->allowedCommands);
     }
     
     /**
