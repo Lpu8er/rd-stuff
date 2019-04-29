@@ -65,6 +65,24 @@ class Discord {
     
     /**
      *
+     * @var array
+     */
+    protected $giveableRoles = [];
+    
+    /**
+     *
+     * @var array
+     */
+    protected $allowedCommands = [];
+    
+    /**
+     *
+     * @var array 
+     */
+    protected $rolesCache = [];
+    
+    /**
+     *
      * @var \React\EventLoop\LoopInterface
      */
     protected $loop = null;
@@ -89,13 +107,18 @@ class Discord {
      * @param string $token
      * @param string $scope
      */
-    public function __construct($uri, $token, $scope, $channel) {
+    public function __construct($uri, $token, $scope, $channel, $giveableRoles, $allowedCommands) {
         $this->uri = $uri;
         $this->token = $token;
         $this->scope = $scope;
         $this->channel = $channel;
+        $this->giveableRoles = $giveableRoles;
+        $this->allowedCommands = $allowedCommands;
     }
     
+    /**
+     * 
+     */
     public function getGuilds() {
         $this->guilds = [];
         $response = REST::json($this->uri, '/users/@me/guilds', null, [], [
@@ -113,6 +136,9 @@ class Discord {
         }
     }
     
+    /**
+     * 
+     */
     public function getGatewayUri() {
         $response = REST::json($this->uri, '/gateway/bot', null, [], [
             'Authorization' => 'Bot '.$this->token,
@@ -123,6 +149,9 @@ class Discord {
         }
     }
     
+    /**
+     * 
+     */
     public function connect() {
         $this->getGuilds();
         $this->getGatewayUri();
@@ -137,11 +166,21 @@ class Discord {
         $this->loop->run();
     }
     
+    /**
+     * 
+     */
     public function heartbeat() {
         $this->ws->send(json_encode(['op' => static::OP_HEARTBEAT, 'd' => $this->lastSequence]));
         $this->loop->addTimer($this->hbInterval, [$this, 'heartbeat']);
     }
     
+    /**
+     * 
+     * @param mixed $msg
+     * @param int $op
+     * @param string $e
+     * @param int $s
+     */
     public function send($msg, $op, $e, $s = 0) {
         $this->ws->send(json_encode([
             'op' => $op,
@@ -151,26 +190,47 @@ class Discord {
         ]));
     }
     
+    /**
+     * 
+     * @param WebSocket $conn
+     */
     public function onConnect(WebSocket $conn) {
         $this->ws = $conn;
         $this->ws->on('message', [$this, 'onMessage']);
         $this->ws->on('close', [$this, 'onClose']);
     }
     
+    /**
+     * 
+     * @param type $code
+     * @param type $reason
+     */
     public function onClose($code = null, $reason = null) {
         echo "Connection closed ({$code} - {$reason})\n";
     }
     
+    /**
+     * 
+     * @param MessageInterface $msg
+     */
     public function onMessage(MessageInterface $msg) {
         $this->parseOperation($msg);
         /*$this->ws->close();*/
     }
     
+    /**
+     * 
+     * @param Exception $e
+     */
     public function onConnectError(Exception $e) {
         echo "Could not connect: {$e->getMessage()}\n";
         $this->loop->stop();
     }
     
+    /**
+     * 
+     * @param string $literal
+     */
     protected function parseOperation($literal) {
         $js = json_decode($literal, true);
         $op = intval($js['op']);
@@ -200,9 +260,20 @@ class Discord {
         }
     }
     
+    /**
+     * 
+     * @param string $event
+     * @param array $data
+     */
     protected function parseEvent(string $event, $data) {
         if(static::EVENT_READY === $event) {
             $this->sessionId = $data['session_id']; // we shall keep it in a file or whatever
+        } elseif(static::EVENT_GUILD_CREATE === $event) {
+            foreach($data['roles'] as $role) {
+                if(in_array($role['name'], $this->giveableRoles)) {
+                    $this->rolesCache[$role['id']] = $role['name'];
+                }
+            }
         } elseif(static::EVENT_MESSAGE_CREATE === $event) {
             $this->parseMessage($data);
         } else {
@@ -210,16 +281,52 @@ class Discord {
         }
     }
     
+    /**
+     * 
+     * @param array $data
+     */
     protected function parseMessage($data) {
         // check if that's a bot message
+        $matches = [];
         if(!$data['tts']
                 && (empty($this->channel) || ($data['channel_id'] === $this->channel))
-                && preg_match('`^\.([a-z])(.+)`', $data['content'])) {
-            $this->talk('Hello World', $data['channel_id']);
+                && preg_match('`^\.([a-zA-Z0-9-]+)(( +)(.+))?$`', $data['content'], $matches)) { // @TODO better includes of "." as joker
+            $this->parseCommand($matches[1], empty($matches[4])? []:explode(' ', $matches[4]), $data);
         }
-        var_dump($data);
     }
     
+    /**
+     * 
+     * @param string $cmd
+     * @param array $args
+     * @param array $pureData
+     */
+    protected function parseCommand(string $cmd, array $args, array $pureData) {
+        if(in_array($cmd, $this->allowedCommands)) {
+            $mn = 'doCmd'.ucfirst($cmd);
+            if(method_exists($this, $mn)) {
+                $this->$mn($args, $pureData);
+            } else {
+                $this->talk('Unimplemented command "'.$cmd.'"');
+            }
+        } else {
+            $this->talk('Unrecognized command "'.$cmd.'"');
+        }
+    }
+    
+    protected function doCmdHello(array $args) {
+        $this->talk('Hello world');
+    }
+    
+    protected function doCmdHelp(array $args) {
+        $this->talk('Help yourself, for now.');
+    }
+    
+    /**
+     * 
+     * @param mixed $msg
+     * @param ?string $channel
+     */
     protected function talk($msg, $channel = null) {
         if(empty($channel)) { $channel = $this->channel; }
         $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
@@ -229,11 +336,58 @@ class Discord {
         ]);
     }
     
+    /**
+     * 
+     */
     public function resume() {
         $this->send([
             'token' => $this->token,
             'session_id' => $this->sessionId,
             'seq' => $this->lastSequence,
             ], static::OP_MESSAGE, static::EVENT_RESUME);
+    }
+    
+    /**
+     * 
+     * @param string $name
+     * @param bool $ignoreCache
+     * @return ?string
+     */
+    protected function getRoleId(string $name, bool $ignoreCache = false) {
+        $returns = null;
+        if(!$ignoreCache && in_array($name, $this->rolesCache)) {
+            $returns = array_search($name, $this->rolesCache);
+        } else {
+            // @TODO
+        }
+        return $returns;
+    }
+    
+    /**
+     * 
+     * @param string $trg
+     * @return string|null
+     */
+    protected function isGiveable(string $trg): ?string {
+        $returns = null;
+        $rolename = 'ping '.preg_replace('`[^a-z0-9]`', '', $trg);
+        if(in_array($rolename, $this->giveableRoles)) {
+            $rid = $this->getRoleId($rolename);
+            if(!empty($rid)) {
+                $returns = $rid;
+            }
+        }
+        return $returns;
+    }
+    
+    public function giveRole() {
+        $rid = $this->isGiveable($trg);
+        if(!empty($rid)) {
+            $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
+                'content' => $msg,
+            ], [
+                'Authorization' => 'Bot '.$this->token,
+            ]);
+        }
     }
 }

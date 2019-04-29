@@ -36,6 +36,12 @@ services:
             $token: '%env(DISCORD_TOKEN)%'
             $scope: '%env(DISCORD_BOT_SCOPE)%'
             $channel: '%env(DISCORD_BOT_CHANNEL)%'
+            $giveableRoles: ['ping ff', 'ping l4d2']
+            $allowedCommands:
+                - hello
+                - help
+                - gimme
+                - rm
     
     App\Service\Discord: '@discord'
     
