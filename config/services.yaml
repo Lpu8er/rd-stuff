@@ -42,6 +42,12 @@ services:
                 - help
                 - gimme
                 - rm
+                - dice
+                - d
+                - hi
+            $aliases:
+                hi: hello
+                d: dice
     
     App\Service\Discord: '@discord'
     

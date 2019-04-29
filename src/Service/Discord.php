@@ -79,6 +79,12 @@ class Discord {
     
     /**
      *
+     * @var array
+     */
+    protected $aliases = [];
+    
+    /**
+     *
      * @var array 
      */
     protected $rolesCache = [];
@@ -104,18 +110,31 @@ class Discord {
     protected $sessionId = null;
     
     /**
+     *
+     * @var array
+     */
+    protected $flushableTalks = [];
+    
+    /**
+     *
+     * @var bool
+     */
+    protected $delayEnabled = false;
+    
+    /**
      * 
      * @param string $uri
      * @param string $token
      * @param string $scope
      */
-    public function __construct($uri, $token, $scope, $channel, $giveableRoles, $allowedCommands) {
+    public function __construct($uri, $token, $scope, $channel, $giveableRoles, $allowedCommands, $aliases) {
         $this->uri = $uri;
         $this->token = $token;
         $this->scope = $scope;
         $this->channel = $channel;
         $this->giveableRoles = $giveableRoles;
         $this->allowedCommands = $allowedCommands;
+        $this->aliases = $aliases;
     }
     
     /**
@@ -306,11 +325,14 @@ class Discord {
     protected function parseCommand(string $cmd, array $args, array $pureData) {
         if($this->isAllowedCommand($cmd)) {
             try {
-                $o = DiscordCommands\DiscordCommand::load($cmd, $args, $pureData);
+                $cmd = $this->getAliasedCommand($cmd);
+                $o = DiscordCommands\DiscordCommand::load($cmd, $args, $pureData, $this->aliases);
                 if(!empty($o)) {
+                    $this->disableDelay();
                     $o->execute($this);
+                    $this->disableDelay();
                 } else {
-                    $this->talk('Unimplemented command `'.$cmd.'`');
+                    $this->talk('Unimplemented command `'.$cmd.'`', $pureData['channel_id']);
                 }
             } catch (Exception $ex) {
                 var_dump($ex->getMessage());
@@ -334,9 +356,55 @@ class Discord {
      * 
      * @return array
      */
+    public function getAllowedCommands(): array {
+        return $this->allowedCommands;
+    }
+    
+    /**
+     * 
+     * @return array
+     */
     public function getGiveableRolesNames(): array {
         return $this->giveableRoles;
     }
+    
+    /**
+     * 
+     * @param string $actualComd
+     * @return string
+     */
+    public function getAliasedCommand(string $actualComd): string {
+        return array_key_exists($actualComd, $this->aliases)? ($this->aliases[$actualComd]):$actualComd;
+    }
+    
+    /**
+     * 
+     * @return $this
+     */
+    public function enableDelay() {
+        $this->delayEnabled = true;
+        return $this;
+    }
+    
+    /**
+     * 
+     * @return $this
+     */
+    public function disableDelay() {
+        $this->delayEnabled = false;
+        return $this;
+    }
+    
+    /**
+     * 
+     * @param type $channelId
+     */
+    public function flush($channelId = null) {
+        $this->disableDelay();
+        $this->talk(implode(PHP_EOL, $this->flushableTalks), $channelId);
+        $this->flushableTalks = [];
+    }
+    
     /**
      * 
      * @param mixed $msg
@@ -344,11 +412,15 @@ class Discord {
      */
     public function talk($msg, $channel = null) {
         if(empty($channel)) { $channel = $this->channel; }
-        $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
-            'content' => $msg,
-        ], [
-            'Authorization' => 'Bot '.$this->token,
-        ]);
+        if($this->delayEnabled) {
+            $this->flushableTalks[] = $msg;
+        } else {
+            $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
+                'content' => $msg,
+            ], [
+                'Authorization' => 'Bot '.$this->token,
+            ]);
+        }
     }
     
     /**
@@ -432,4 +504,5 @@ class Discord {
         }
         return $returns;
     }
+    
 }

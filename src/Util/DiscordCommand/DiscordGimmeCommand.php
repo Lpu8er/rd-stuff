@@ -21,16 +21,17 @@ class DiscordGimmeCommand extends DiscordCommand {
     public function execute(Discord $discordService) {
         if(!empty($this->data['author'])
                 && !empty($this->data['author']['id'])
-                && empty($this->data['webhook_id']))
-        if(1 <= count($this->args)) {
-            $roleName = trim(preg_replace('`[^a-zA-Z0-9]`', '', array_shift($this->args)));
-            if($discordService->giveRole($roleName, $this->data['guild_id'], $this->data['author']['id'])) {
-                $discordService->talk('Role `ping '.$roleName.'` given !', $this->data['channel_id']);
+                && empty($this->data['webhook_id'])) {
+            if(1 <= count($this->args)) {
+                $roleName = trim(preg_replace('`[^a-zA-Z0-9]`', '', array_shift($this->args)));
+                if($discordService->giveRole($roleName, $this->data['guild_id'], $this->data['author']['id'])) {
+                    $discordService->talk('Role `ping '.$roleName.'` given !', $this->data['channel_id']);
+                } else {
+                    $discordService->talk('Fail to give that role, sorry !', $this->data['channel_id']);
+                }
             } else {
-                $discordService->talk('Fail to give that role, sorry !', $this->data['channel_id']);
+                $discordService->talk('Syntax : `.gimme <role>`');
             }
-        } else {
-            $discordService->talk('Syntax : `.gimme <role>`');
         }
     }
 }
