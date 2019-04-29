@@ -2,7 +2,6 @@
 namespace App\Util\DiscordCommand;
 
 use App\Service\Discord;
-use Zend\Code\Reflection\Exception\BadMethodCallException;
 
 /**
  * Description of DiscordHelloCommand

@@ -332,6 +332,13 @@ class Discord {
     
     /**
      * 
+     * @return array
+     */
+    public function getGiveableRolesNames(): array {
+        return $this->giveableRoles;
+    }
+    /**
+     * 
      * @param mixed $msg
      * @param ?string $channel
      */
@@ -379,23 +386,50 @@ class Discord {
     protected function isGiveable(string $trg): ?string {
         $returns = null;
         $rolename = 'ping '.preg_replace('`[^a-z0-9]`', '', $trg);
-        if(in_array($rolename, $this->giveableRoles)) {
+        if(in_array($rolename, $this->getGiveableRolesNames())) {
             $rid = $this->getRoleId($rolename);
             if(!empty($rid)) {
                 $returns = $rid;
-            }
+            } // @TODO invalid role
+        } // @TODO not giveable role
+        return $returns;
+    }
+    
+    /**
+     * 
+     * @param string $roleName
+     * @param string $gid
+     * @param string $user
+     * @return bool
+     */
+    public function giveRole(string $roleName, string $gid, string $user): bool {
+        $returns = false;
+        $rid = $this->isGiveable($roleName);
+        if(!empty($rid)) {
+            $response = REST::json($this->uri, '/guilds/'.$gid.'/members/'.$user.'/roles/'.$rid, REST::METHOD_PUT, [], [
+                'Authorization' => 'Bot '.$this->token,
+            ]);
+            $returns = (\Symfony\Component\HttpFoundation\Response::HTTP_NO_CONTENT === $response->getCode());
         }
         return $returns;
     }
     
-    public function giveRole() {
-        $rid = $this->isGiveable($trg);
+    /**
+     * 
+     * @param string $roleName
+     * @param string $gid
+     * @param string $user
+     * @return bool
+     */
+    public function removeRole(string $roleName, string $gid, string $user): bool {
+        $returns = false;
+        $rid = $this->isGiveable($roleName);
         if(!empty($rid)) {
-            $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
-                'content' => $msg,
-            ], [
+            $response = REST::json($this->uri, '/guilds/'.$gid.'/members/'.$user.'/roles/'.$rid, REST::METHOD_DELETE, [], [
                 'Authorization' => 'Bot '.$this->token,
             ]);
+            $returns = (\Symfony\Component\HttpFoundation\Response::HTTP_NO_CONTENT === $response->getCode());
         }
+        return $returns;
     }
 }
