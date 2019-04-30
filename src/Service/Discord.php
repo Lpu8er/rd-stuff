@@ -1,15 +1,19 @@
 <?php
 namespace App\Service;
 
+use App\Entity\DiscordUser;
+use App\Util\DiscordCommand as DiscordCommands;
 use App\Util\REST;
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Ratchet\Client\Connector as ClientConnector;
 use Ratchet\Client\WebSocket;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 use React\Socket\Connector as ReactConnector;
-
-use App\Util\DiscordCommand as DiscordCommands;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Description of Discord
@@ -91,7 +95,7 @@ class Discord {
     
     /**
      *
-     * @var \React\EventLoop\LoopInterface
+     * @var LoopInterface
      */
     protected $loop = null;
     
@@ -103,10 +107,22 @@ class Discord {
      */
     protected $ws = null;
     
+    /**
+     *
+     * @var int
+     */
     protected $lastSequence = null;
     
+    /**
+     *
+     * @var int
+     */
     protected $hbInterval = null;
     
+    /**
+     *
+     * @var int
+     */
     protected $sessionId = null;
     
     /**
@@ -122,12 +138,19 @@ class Discord {
     protected $delayEnabled = false;
     
     /**
+     *
+     * @var type 
+     */
+    protected $em = null;
+    
+    /**
      * 
      * @param string $uri
      * @param string $token
      * @param string $scope
      */
-    public function __construct($uri, $token, $scope, $channel, $giveableRoles, $allowedCommands, $aliases) {
+    public function __construct(EntityManagerInterface $em, $uri, $token, $scope, $channel, $giveableRoles, $allowedCommands, $aliases) {
+        $this->em = $em;
         $this->uri = $uri;
         $this->token = $token;
         $this->scope = $scope;
@@ -481,7 +504,7 @@ class Discord {
             $response = REST::json($this->uri, '/guilds/'.$gid.'/members/'.$user.'/roles/'.$rid, REST::METHOD_PUT, [], [
                 'Authorization' => 'Bot '.$this->token,
             ]);
-            $returns = (\Symfony\Component\HttpFoundation\Response::HTTP_NO_CONTENT === $response->getCode());
+            $returns = (Response::HTTP_NO_CONTENT === $response->getCode());
         }
         return $returns;
     }
@@ -500,9 +523,46 @@ class Discord {
             $response = REST::json($this->uri, '/guilds/'.$gid.'/members/'.$user.'/roles/'.$rid, REST::METHOD_DELETE, [], [
                 'Authorization' => 'Bot '.$this->token,
             ]);
-            $returns = (\Symfony\Component\HttpFoundation\Response::HTTP_NO_CONTENT === $response->getCode());
+            $returns = (Response::HTTP_NO_CONTENT === $response->getCode());
         }
         return $returns;
     }
     
+    public function registerUser(int $id, string $name, int $disc): DiscordUser {
+        $u = new DiscordUser;
+        $u->setDateAdd(new DateTime);
+        $u->setId($id);
+        $u->setDiscordName($name);
+        $u->setDiscriminator($disc);
+        return $this->saveUser($u);
+    }
+    
+    public function retrieveUser(int $id): ?DiscordUser {
+        $u = $this->em->getRepository(DiscordUser::class)->find($id);
+        return empty($u)? null:$u;
+    }
+    
+    public function updateUserName(DiscordUser $u, string $name, int $disc): DiscordUser {
+        $u->setDiscordName($name);
+        $u->setDiscriminator($disc);
+        return $this->saveUser($u);
+    }
+    
+    public function findOrCreateUser(int $id, string $name, int $disc): DiscordUser {
+        $u = $this->retrieveUser($id);
+        if(empty($u)) {
+            $u = $this->registerUser($id, $name, $disc);
+        }
+        return $u;
+    }
+    
+    public function saveUser(DiscordUser $u) {
+        $this->em->persist($u);
+        $this->em->flush();
+        return $u;
+    }
+    
+    public function getEntityManager() {
+        return $this->em;
+    }
 }
