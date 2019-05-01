@@ -144,12 +144,18 @@ class Discord {
     protected $em = null;
     
     /**
+     *
+     * @var \Psr\Log\LoggerInterface 
+     */
+    protected $logger = null;
+    
+    /**
      * 
      * @param string $uri
      * @param string $token
      * @param string $scope
      */
-    public function __construct(EntityManagerInterface $em, $uri, $token, $scope, $channel, $giveableRoles, $allowedCommands, $aliases) {
+    public function __construct(EntityManagerInterface $em, \Psr\Log\LoggerInterface $logger, $uri, $token, $scope, $channel, $giveableRoles, $allowedCommands, $aliases) {
         $this->em = $em;
         $this->uri = $uri;
         $this->token = $token;
@@ -158,6 +164,7 @@ class Discord {
         $this->giveableRoles = $giveableRoles;
         $this->allowedCommands = $allowedCommands;
         $this->aliases = $aliases;
+        $this->logger = $logger;
     }
     
     /**
@@ -321,7 +328,7 @@ class Discord {
         } elseif(static::EVENT_MESSAGE_CREATE === $event) {
             $this->parseMessage($data);
         } else {
-            var_dump($event);
+            // var_dump($event);
         }
     }
     
@@ -358,7 +365,7 @@ class Discord {
                     $this->talk('Unimplemented command `'.$cmd.'`', $pureData['channel_id']);
                 }
             } catch (Exception $ex) {
-                var_dump($ex->getMessage());
+                $this->logger->critical($ex->getMessage());
                 $this->talk('An error occured, please retry later', $pureData['channel_id']);
             }
         } else {
