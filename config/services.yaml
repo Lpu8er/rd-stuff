@@ -49,6 +49,7 @@ services:
                 - m
                 - daily
                 - pasta
+                - bet
             $aliases:
                 hi: hello
                 d: dice

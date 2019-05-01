@@ -17,7 +17,7 @@ class DiscordPastaCommand extends DiscordCommand {
         $discordService->disableDelay();
     }
     
-    public function execute(Discord $discordService) {
+    protected function getList() {
         $pastas = [];
         $pastas['popipo'] = <<<'EOT'
 https://www.youtube.com/watch?v=mco3UX9SqDA
@@ -61,8 +61,27 @@ EOT;
         $pastas['despacito'] = $pastas['despapipo'];
         $pastas['navy'] = $pastas['navyseal'];
         
+        return $pastas;
+    }
+    
+    protected function getDescription() {
+        return [
+            'popipo' => 'PO PI PO',
+            'despapipo' => 'Nobody wants this anyway.',
+            'navyseal' => 'The famous one.',
+            
+            'po' => 'Alias of `popipo`',
+            'despacito' => 'Alias of `despapipo`',
+            'navy' => 'Alias of `navyseal`',
+        ];
+    }
+    
+    public function execute(Discord $discordService) {
+        
+        
         if(1 <= count($this->args)) {
             $fc = trim(preg_replace('`[^a-zA-Z0-9]`', '', array_shift($this->args)));
+            $pastas = $this->getList();
             if(array_key_exists($fc, $pastas)) {
                 $discordService->talk($pastas[$fc], $this->data['channel_id']);
             } else {
