@@ -28,6 +28,7 @@
         "symfony/yaml": "*"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^3.1",
         "sensiolabs/security-checker": "^5",
         "symfony/debug-pack": "*",
         "symfony/dotenv": "*",

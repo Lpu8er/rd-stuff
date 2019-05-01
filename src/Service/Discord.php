@@ -139,7 +139,7 @@ class Discord {
     
     /**
      *
-     * @var type 
+     * @var EntityManagerInterface 
      */
     protected $em = null;
     
@@ -562,6 +562,10 @@ class Discord {
         return $u;
     }
     
+    /**
+     * 
+     * @return EntityManagerInterface
+     */
     public function getEntityManager() {
         return $this->em;
     }

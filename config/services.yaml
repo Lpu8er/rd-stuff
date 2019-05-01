@@ -50,10 +50,13 @@ services:
                 - daily
                 - pasta
                 - bet
+                - hangman
+                - h
             $aliases:
                 hi: hello
                 d: dice
                 m: money
+                h: hangman
     
     App\Service\Discord: '@discord'
     
