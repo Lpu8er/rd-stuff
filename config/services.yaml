@@ -52,11 +52,14 @@ services:
                 - bet
                 - hangman
                 - h
+                - wiki
+                - w
             $aliases:
                 hi: hello
                 d: dice
                 m: money
                 h: hangman
+                w: wiki
     
     App\Service\Discord: '@discord'
     

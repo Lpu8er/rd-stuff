@@ -439,18 +439,49 @@ class Discord {
      * 
      * @param mixed $msg
      * @param ?string $channel
+     * @param array $embeds uncompatible with delay atm
      */
-    public function talk($msg, $channel = null) {
+    public function talk($msg, $channel = null, array $embeds = []) {
         if(empty($channel)) { $channel = $this->channel; }
         if($this->delayEnabled) {
             $this->flushableTalks[] = $msg;
         } else {
             $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
                 'content' => $msg,
+                'embed' => $embeds,
             ], [
                 'Authorization' => 'Bot '.$this->token,
             ]);
         }
+    }
+    
+    /**
+     * 
+     * @param mixed $msg
+     * @param ?string $url
+     * @param array $fields
+     * @param ?string $color in hexa
+     * @param ?string $channel
+     */
+    public function embed($title, $url = null, array $fields = [], $color = null, $channel = null) {
+        if(empty($channel)) { $channel = $this->channel; }
+        $ctx = [
+            'title' => $title,
+        ];
+        if(!empty($url)) {
+            $ctx['url'] = $url;
+        }
+        if(!empty($color)) {
+            $ctx['color'] = hexdec($color);
+        }
+        if(!empty($fields)) {
+            $ctx['fields'] = $fields;
+        }
+        $response = REST::json($this->uri, '/channels/'.$channel.'/messages', REST::METHOD_POST, [
+            'embed' => $ctx,
+        ], [
+            'Authorization' => 'Bot '.$this->token,
+        ]);
     }
     
     /**

@@ -21,11 +21,9 @@ class DiscordPastaCommand extends DiscordCommand {
         $pastas = [];
         $pastas['popipo'] = <<<'EOT'
 https://www.youtube.com/watch?v=mco3UX9SqDA
-```https://www.youtube.com/watch?v=mco3UX9SqDA```
 EOT;
         $pastas['despapipo'] = <<<'EOT'
 https://www.youtube.com/watch?v=1P1c-ML9MMI
-```https://www.youtube.com/watch?v=1P1c-ML9MMI```
 EOT;
         
         $pastas['navyseal'] = <<<'EOT'
@@ -55,6 +53,7 @@ But you couldn't, you didn't, and now you're paying the price,
 you goddamn idiot. I will shit fury all over you and you will drown in it.
 You're fucking dead, kiddo.```
 EOT;
+        $pastas['navyseal'] = str_replace("\n", ' ', $pastas['navyseal']); // remove eol, this pasta is better condensed
         
         // "aliases"
         $pastas['po'] = $pastas['popipo'];

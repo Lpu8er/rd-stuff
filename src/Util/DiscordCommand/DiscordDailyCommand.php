@@ -32,7 +32,7 @@ class DiscordDailyCommand extends DiscordCommand {
                 $discordService->flush($this->data['channel_id']);
                 $discordService->disableDelay();
             } else {
-                $discordService->talk('A daily once a day will grant stuff. More, it won\'t.', $this->data['channel_id']);
+                $discordService->talk('A daily once a day will grant stuff. More, it won\'t. Last time used : '.($da->format('d/m/Y H:i:s')), $this->data['channel_id']);
             }
         }
     }

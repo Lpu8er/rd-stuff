@@ -35,17 +35,11 @@ class DiscordHelpCommand extends DiscordCommand {
                 $discordService->talk('Unrecognized command `'.$sub.'`');
             }
         } else {
-            $discordService->enableDelay();
+            $msg = [];
             foreach($discordService->getAllowedCommands() as $c) {
-                $as = $discordService->getAliasedCommand($c);
-                if($c == $as) {
-                    $discordService->talk('**'.$c.'**');
-                    $this->loadHelp($c, $discordService);
-                } else {
-                    $discordService->talk('**'.$c.'** : Alias of `'.$as.'`', $this->data['channel_id']);
-                }
+                $msg[] = '**'.$c.'**';
             }
-            $discordService->flush($this->data['channel_id']);
+            $discordService->talk('Available comamnds : '.implode(', ', $msg).' (use `.help <cmd>` to have more information about a command)', $this->data['channel_id']);
         }
     }
 }
