@@ -25,15 +25,18 @@ class RegisterWord extends Command {
 
     protected function configure() {
         $this->setName('discord:word:register')
-                ->addArgument('word', InputArgument::REQUIRED);
+                ->addArgument('words', InputArgument::IS_ARRAY);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
-        $output->write('Registering...');
-        $w = $input->getArgument('word');
-        $word = new Word;
-        $word->setWord(strtoupper($w));
-        $this->em->persist($word);
+        $output->write('Registering... ');
+        $ws = $input->getArgument('words');
+        foreach($ws as $w) {
+            $output->write('.');
+            $word = new Word;
+            $word->setWord(strtoupper($w));
+            $this->em->persist($word);
+        }
         $this->em->flush();
         $output->writeln(' done.');
     }
