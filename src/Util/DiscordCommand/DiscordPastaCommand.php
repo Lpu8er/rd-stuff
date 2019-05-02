@@ -76,11 +76,10 @@ EOT;
     }
     
     public function execute(Discord $discordService) {
-        
+        $pastas = $this->getList();
         
         if(1 <= count($this->args)) {
             $fc = trim(preg_replace('`[^a-zA-Z0-9]`', '', array_shift($this->args)));
-            $pastas = $this->getList();
             if(array_key_exists($fc, $pastas)) {
                 $discordService->talk($pastas[$fc], $this->data['channel_id']);
             } else {
