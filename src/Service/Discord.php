@@ -241,6 +241,10 @@ class Discord {
         ]));
     }
     
+    public function disconnect() {
+        $this->ws->close();
+    }
+    
     /**
      * 
      * @param WebSocket $conn
@@ -257,7 +261,11 @@ class Discord {
      * @param type $reason
      */
     public function onClose($code = null, $reason = null) {
-        echo "Connection closed ({$code} - {$reason})\n";
+        if($code > 1000) { // something gone wrong
+            echo '['.date('Y-m-d H:i:s').'] Connection closed ('.$code.' - '.$reason.')'.PHP_EOL;
+            // try to restart it
+            $this->resume();
+        }
     }
     
     /**
@@ -266,7 +274,6 @@ class Discord {
      */
     public function onMessage(MessageInterface $msg) {
         $this->parseOperation($msg);
-        /*$this->ws->close();*/
     }
     
     /**
@@ -274,7 +281,7 @@ class Discord {
      * @param Exception $e
      */
     public function onConnectError(Exception $e) {
-        echo "Could not connect: {$e->getMessage()}\n";
+        echo '['.date('Y-m-d H:i:s').'] Could not connect: '.$e->getMessage().''.PHP_EOL;
         $this->loop->stop();
     }
     
