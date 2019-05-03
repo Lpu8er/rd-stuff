@@ -14,13 +14,14 @@ abstract class DiscordCommand {
      * @param string $name
      * @param array $args
      * @param array $data
+     * @param bool $admin default as false, used to perform some checks
      * @return DiscordCommand
      */
-    final public static function load(string $name, array $args, array $data): ?DiscordCommand {
+    final public static function load(string $name, array $args, array $data, bool $admin = false): ?DiscordCommand {
         $returns = null;
         $cls = __NAMESPACE__.'\\Discord'.ucfirst($name).'Command';
         if(class_exists($cls)) {
-            $cmdObj = new $cls($name, $args, $data);
+            $cmdObj = new $cls($name, $args, $data, $admin);
             if(!empty($cmdObj) && is_a($cmdObj, __CLASS__)) {
                 $returns = $cmdObj;
             }
@@ -28,14 +29,39 @@ abstract class DiscordCommand {
         return $returns;
     }
     
+    /**
+     *
+     * @var string
+     */
     protected $name;
+    
+    /**
+     *
+     * @var array
+     */
     protected $args;
+    
+    /**
+     *
+     * @var array
+     */
     protected $data;
     
-    protected function __construct(string $name, array $args, array $data) {
+    /**
+     *
+     * @var bool
+     */
+    protected $admin = false;
+    
+    protected function __construct(string $name, array $args, array $data, bool $admin = false) {
         $this->name = $name;
         $this->args = $args;
         $this->data = $data;
+        $this->admin = $admin;
+    }
+    
+    final public function isAdmin() {
+        return $this->admin;
     }
     
     final public function getName() {

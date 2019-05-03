@@ -2,11 +2,13 @@
 namespace App\Service;
 
 use App\Entity\DiscordUser;
+use App\Entity\MessageQueue;
 use App\Util\DiscordCommand as DiscordCommands;
 use App\Util\REST;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Ratchet\Client\Connector as ClientConnector;
 use Ratchet\Client\WebSocket;
 use Ratchet\RFC6455\Messaging\MessageInterface;
@@ -35,6 +37,8 @@ class Discord {
     const EVENT_TYPING_START = 'TYPING_START';
     const EVENT_MESSAGE_CREATE = 'MESSAGE_CREATE';
     const EVENT_PRESENCE_UPDATE = 'PRESENCE_UPDATE';
+    
+    const INTERVAL_MESSAGEQUEUES = 10;
     
     /**
      *
@@ -145,7 +149,7 @@ class Discord {
     
     /**
      *
-     * @var \Psr\Log\LoggerInterface 
+     * @var LoggerInterface 
      */
     protected $logger = null;
     
@@ -155,7 +159,7 @@ class Discord {
      * @param string $token
      * @param string $scope
      */
-    public function __construct(EntityManagerInterface $em, \Psr\Log\LoggerInterface $logger, $uri, $token, $scope, $channel, $giveableRoles, $allowedCommands, $aliases) {
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, $uri, $token, $scope, $channel, $giveableRoles, $allowedCommands, $aliases) {
         $this->em = $em;
         $this->uri = $uri;
         $this->token = $token;
@@ -198,6 +202,10 @@ class Discord {
             $d = $response->getContent();
             $this->gatewayUri = $d['url'];
         }
+    }
+    
+    public function consoleLog($msg) {
+        echo '['.date('Y-m-d H:i:s').'] '.$msg.PHP_EOL;
     }
     
     /**
@@ -262,7 +270,7 @@ class Discord {
      */
     public function onClose($code = null, $reason = null) {
         if($code > 1000) { // something gone wrong
-            echo '['.date('Y-m-d H:i:s').'] Connection closed ('.$code.' - '.$reason.')'.PHP_EOL;
+            $this->consoleLog('Connection closed ('.$code.' - '.$reason.')');
             // try to restart it
             $this->resume();
         }
@@ -281,7 +289,7 @@ class Discord {
      * @param Exception $e
      */
     public function onConnectError(Exception $e) {
-        echo '['.date('Y-m-d H:i:s').'] Could not connect: '.$e->getMessage().''.PHP_EOL;
+        $this->consoleLog('Could not connect: '.$e->getMessage());
         $this->loop->stop();
     }
     
@@ -310,6 +318,7 @@ class Discord {
                             '$device' => 'php',
                         ],
                     ], static::OP_IDENTIFY, static::EVENT_IDENTIFY);
+                    $this->loop->addPeriodicTimer(static::INTERVAL_MESSAGEQUEUES, [$this, 'checkMessageQueue']);
                 }
                 break;
             case static::OP_MESSAGE:
@@ -363,7 +372,7 @@ class Discord {
         if($this->isAllowedCommand($cmd)) {
             try {
                 $cmd = $this->getAliasedCommand($cmd);
-                $o = DiscordCommands\DiscordCommand::load($cmd, $args, $pureData, $this->aliases);
+                $o = DiscordCommands\DiscordCommand::load($cmd, $args, $pureData);
                 if(!empty($o)) {
                     $this->disableDelay();
                     $o->execute($this);
@@ -500,6 +509,29 @@ class Discord {
             'session_id' => $this->sessionId,
             'seq' => $this->lastSequence,
             ], static::OP_MESSAGE, static::EVENT_RESUME);
+    }
+    
+    /**
+     * 
+     * Check for message queue if any available message is there
+     * 
+     */
+    public function checkMessageQueue() {
+        $msg = $this->em->getRepository(MessageQueue::class)->findLastToRun();
+        if(!empty($msg)) {
+            $this->em->getRepository(MessageQueue::class)->flagAsProcessing($msg);
+            $scmd = $msg->getMethod();
+            $sargs = $msg->getArgs();
+            $o = DiscordCommands\DiscordCommand::load($scmd, $sargs['args'], $sargs['data'], true);
+            if(!empty($o)) {
+                $this->disableDelay();
+                $o->execute($this);
+                $this->disableDelay();
+            } else {
+                $this->consoleLog('Unrecognized command from message queue : '.$scmd);
+            }
+            $this->em->getRepository(MessageQueue::class)->flagAsDone($msg);
+        }
     }
     
     /**
