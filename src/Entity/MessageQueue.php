@@ -49,6 +49,10 @@ class MessageQueue {
      * @var array 
      */
     private $args;
+    
+    public function __toString() {
+        return '['.$this->getDateQueue()->format('c').'] #'.$this->getId().' ('.$this->getMethod().')';
+    }
 
     public function getId(): ?int
     {
