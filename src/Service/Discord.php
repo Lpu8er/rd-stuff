@@ -343,8 +343,11 @@ class Discord {
             }
         } elseif(static::EVENT_MESSAGE_CREATE === $event) {
             $this->parseMessage($data);
-        } else {
-            // var_dump($event);
+        } elseif(in_array($event, [static::EVENT_PRESENCE_UPDATE, static::EVENT_TYPING_START,])) { // ignored events
+            
+        } else { // monitored events
+            $this->consoleLog('Received event "'.$event.'" (trace below)');
+            $this->consoleLog(var_export($data, true));
         }
     }
     
