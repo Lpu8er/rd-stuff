@@ -27,6 +27,9 @@ class Discord {
     const OP_HEARTBEAT = 1;
     const OP_IDENTIFY = 2;
     const OP_HANDSHAKE = 10;
+    const OP_RESUME = 6;
+    const OP_RECONNECT = 7;
+    const OP_INVALID_SESSION = 9;
     
     const EVENT_HEARTBEAT = 'HEARTBEAT';
     const EVENT_IDENTIFY = 'IDENTIFY';
@@ -210,6 +213,7 @@ class Discord {
     
     /**
      * 
+     * @return $this
      */
     public function connect() {
         $this->getGuilds();
@@ -272,7 +276,7 @@ class Discord {
         if($code > 1000) { // something gone wrong
             $this->consoleLog('Connection closed ('.$code.' - '.$reason.')');
             // try to restart it
-            $this->resume();
+            $this->connect()->resume();
         }
     }
     
@@ -323,6 +327,10 @@ class Discord {
                 break;
             case static::OP_MESSAGE:
                 $this->parseEvent($js['t'], $js['d']);
+                break;
+            case static::OP_RECONNECT:
+                $this->consoleLog('Starting resume process by opcode reconnect received');
+                $this->connect()->resume();
                 break;
         }
     }
@@ -507,11 +515,13 @@ class Discord {
      * 
      */
     public function resume() {
-        $this->send([
+        $this->consoleLog('Starting to resume');
+        $response = $this->send([
             'token' => $this->token,
             'session_id' => $this->sessionId,
             'seq' => $this->lastSequence,
-            ], static::OP_MESSAGE, static::EVENT_RESUME);
+            ], static::OP_RESUME, static::EVENT_RESUME);
+        $this->consoleLog('Response of ='.var_export($response, true));
     }
     
     /**
