@@ -39,7 +39,7 @@ class DiscordHelpCommand extends DiscordCommand {
             foreach($discordService->getAllowedCommands() as $c) {
                 $msg[] = '**'.$c.'**';
             }
-            $discordService->talk('Available comamnds : '.implode(', ', $msg).' (use `.help <cmd>` to have more information about a command)', $this->data['channel_id']);
+            $discordService->talk('Available commands : '.implode(', ', $msg).' (use `.help <cmd>` to have more information about a command)', $this->data['channel_id']);
         }
     }
 }
