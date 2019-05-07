@@ -23,9 +23,10 @@ class DiscordLeaderboardCommand extends DiscordCommand {
         }
         arsort($returns);
         $returns = array_slice($returns, 0, static::SIZE);
+        $mx = max(10, max(array_map('strlen', array_keys($returns))));
         $msg = 'Money leaderboard : ';
         foreach($returns as $un => $mn) {
-            $msg .= PHP_EOL.'**'.$un.'** '.number_format($mn, 2).' :euro: ';
+            $msg .= PHP_EOL.'**'.str_pad($un, $mx, ' ').'** '.number_format($mn, 2).' :euro: ';
         }
         $discordService->talk($msg, $this->data['channel_id']);
     }
