@@ -54,12 +54,15 @@ services:
                 - h
                 - wiki
                 - w
+                - leaderboard
+                - lb
             $aliases:
                 hi: hello
                 d: dice
                 m: money
                 h: hangman
                 w: wiki
+                lb: leaderboard
     
     App\Service\Discord: '@discord'
     
