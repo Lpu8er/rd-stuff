@@ -39,6 +39,7 @@ class Discord {
     const EVENT_GUILD_CREATE = 'GUILD_CREATE'; // happens at first connections, may help to lay load stuff !
     const EVENT_TYPING_START = 'TYPING_START';
     const EVENT_MESSAGE_CREATE = 'MESSAGE_CREATE';
+    const EVENT_MESSAGE_UPDATE = 'MESSAGE_UPDATE';
     const EVENT_PRESENCE_UPDATE = 'PRESENCE_UPDATE';
     
     const INTERVAL_MESSAGEQUEUES = 10;
@@ -351,7 +352,7 @@ class Discord {
             }
         } elseif(static::EVENT_MESSAGE_CREATE === $event) {
             $this->parseMessage($data);
-        } elseif(in_array($event, [static::EVENT_PRESENCE_UPDATE, static::EVENT_TYPING_START,])) { // ignored events
+        } elseif(in_array($event, [static::EVENT_PRESENCE_UPDATE, static::EVENT_TYPING_START, static::EVENT_MESSAGE_UPDATE,])) { // ignored events
             
         } else { // monitored events
             $this->consoleLog('Received event "'.$event.'" (trace below)');

@@ -15,7 +15,7 @@ class DiscordWikiCommand extends DiscordCommand {
     
     public function execute(Discord $discordService) {
         if(1 <= count($this->args)) {
-            $fc = trim(preg_replace('`\W`', '', array_shift($this->args)));
+            $fc = ucfirst(trim(preg_replace('`\W`', '', array_shift($this->args))));
             $ln = 'https://fr.wikipedia.org/wiki/'.urlencode($fc);
             $discordService->embed('Wikipédia - '.$fc, $ln, [], 'e0e0e0', $this->data['channel_id']);
         }

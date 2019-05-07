@@ -12,9 +12,11 @@ class DiscordBetCommand extends DiscordCommand {
     public function help(Discord $discordService) {
         $msg = '`.bet <amount> <bet>` place a bet of `<amount>` :euro: to have the `<bet>` result of a 100-face dice';
         $msg.= PHP_EOL;
-        $msg.= 'Exact match : `<amount> * 3` :euro:';
+        $msg.= 'Exact match :champagne: : `<amount> * 3` :euro:';
         $msg.= PHP_EOL;
-        $msg.= 'Near match (+/-3) : `<amount> * 2` :euro:';
+        $msg.= 'Near match (+/-5) :second_place: : `<amount> * 2` :euro:';
+        $msg.= PHP_EOL;
+        $msg.= 'Lucky strike (one number) :shield: : `<amount> * 1` :euro:';
         $discordService->talk($msg, $this->data['channel_id']);
     }
     
@@ -30,13 +32,18 @@ class DiscordBetCommand extends DiscordCommand {
                     if($amount <= $u->getMoney()) {
                         $nam = ($u->getMoney() - $amount);
                         $rnd = mt_rand(1, 100);
+                        $dzn = floor($rnd / 10); $unt = $rnd - (10 * $dzn);
+                        $bzn = floor($bet / 10); $bnt = $bet - (10 * $bzn);
                         $msg = ':game_die: **'.strval($rnd).'** ';
                         if($rnd == $bet) {
                             $nam+= ($amount * 3);
-                            $msg.= ':champagne: You **won** '.($amount * 3).' :euro: !';
-                        } elseif(($rnd >= ($bet - 2)) && ($rnd <= ($bet + 2))) {
+                            $msg.= ':champagne: You **won** '.number_format($amount * 3, 2).' :euro: !';
+                        } elseif(($rnd >= ($bet - 5)) && ($rnd <= ($bet + 5))) {
                             $nam+= ($amount * 2);
-                            $msg.= ':second_place: You **won** '.($amount * 2).' :euro: !';
+                            $msg.= ':second_place: You **won** '.number_format($amount * 2, 2).' :euro: !';
+                        } elseif(($dzn == $bzn) || ($unt == $bnt)) {
+                            $nam+= $amount;
+                            $msg.= ':shield: You **won** '.number_format($amount, 2).' :euro: !';
                         } else {
                             $msg.= ':skull: **RIP**';
                         }

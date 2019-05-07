@@ -52,6 +52,13 @@ class DiscordUser {
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $dailyAsk = null;
+    
+    /**
+     *
+     * @var int 
+     * @ORM\Column(type="integer", options={"default" : 0})
+     */
+    private $dailyStrike = 0;
 
     public function getId(): ?int
     {
@@ -121,6 +128,18 @@ class DiscordUser {
     public function setDailyAsk(?\DateTimeInterface $dailyAsk): self
     {
         $this->dailyAsk = $dailyAsk;
+
+        return $this;
+    }
+
+    public function getDailyStrike(): ?int
+    {
+        return $this->dailyStrike;
+    }
+
+    public function setDailyStrike(int $dailyStrike): self
+    {
+        $this->dailyStrike = $dailyStrike;
 
         return $this;
     }

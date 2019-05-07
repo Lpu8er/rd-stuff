@@ -45,7 +45,7 @@ class DiscordHangmanCommand extends DiscordCommand {
                         $msg[] = ':military_medal: **Success !**';
                         $hrep->blast($h);
                     } elseif($h->getTries() >= static::MAXTRIES) {
-                        $msg[] = ':japanese_ogre: **FAILED**';
+                        $msg[] = ':japanese_ogre: **FAILED** :japanese_ogre: '.$h->getFunWholeWord().' :japanese_ogre: ';
                         $hrep->blast($h);
                     } else {
                         $msg[] = '*Testé ('.$h->getTries().'/'.static::MAXTRIES.') : '.$h->getLetters().'*';

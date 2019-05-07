@@ -114,4 +114,17 @@ class Hangman {
         }
         return $returns;
     }
+    
+    public function getFunWholeWord(): string {
+        $returns = '';
+        $w = str_split($this->getWord());
+        foreach($w as $d) {
+            if(' ' == $d) {
+                $returns .= ' :white_large_square: ';
+            } else {
+                $returns .= ' :regional_indicator_'.strtolower($d).': ';
+            }
+        }
+        return $returns;
+    }
 }
