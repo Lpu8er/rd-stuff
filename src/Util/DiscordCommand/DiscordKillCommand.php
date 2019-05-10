@@ -11,6 +11,7 @@ use App\Service\Discord;
 class DiscordKillCommand extends DiscordAdmin {
     public function execute(Discord $discordService) {
         $discordService->consoleLog('Starting disconnection...');
+        $discordService->talk('Received disconnection order...');
         $discordService->disconnect();
         $discordService->kill();
         $discordService->consoleLog('Disconnected.');
