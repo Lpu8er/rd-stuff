@@ -31,7 +31,7 @@ class DiscordUptimeCommand extends DiscordCommand {
      */
     protected function getTimeSpan(DateTime $st): string {
         $sms = [];
-        $di = $st->diff((new DateTime)->sub(new DateInterval('P1D')));
+        $di = $st->diff(new DateTime);
         if($di->d) { $sms[] = ''.$di->d.' day'.((1 < $di->d)? 's':''); }
         if($di->h) { $sms[] = ''.$di->h.' hour'.((1 < $di->h)? 's':''); }
         if($di->i) { $sms[] = ''.$di->i.' minute'.((1 < $di->i)? 's':''); }
