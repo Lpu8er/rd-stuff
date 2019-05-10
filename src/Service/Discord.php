@@ -30,6 +30,7 @@ class Discord {
     const OP_RESUME = 6;
     const OP_RECONNECT = 7;
     const OP_INVALID_SESSION = 9;
+    const OP_HEARTBEAT_ACK = 11;
     
     const EVENT_HEARTBEAT = 'HEARTBEAT';
     const EVENT_IDENTIFY = 'IDENTIFY';
@@ -173,6 +174,12 @@ class Discord {
     protected $connectionDate = null;
     
     /**
+     *
+     * @var type 
+     */
+    protected $lastAck = true;
+    
+    /**
      * 
      * @param string $uri
      * @param string $token
@@ -266,6 +273,8 @@ class Discord {
      * 
      */
     public function heartbeat() {
+        if(!$this->lastAck) { $this->consoleLog('Did not received ACK on last heartbeat'); }
+        $this->lastAck = false;
         $this->ws->send(json_encode(['op' => static::OP_HEARTBEAT, 'd' => $this->lastSequence]));
         $this->loop->addTimer($this->hbInterval, [$this, 'heartbeat']);
     }
@@ -362,6 +371,9 @@ class Discord {
                     ], static::OP_IDENTIFY, static::EVENT_IDENTIFY);
                     $this->loop->addPeriodicTimer(static::INTERVAL_MESSAGEQUEUES, [$this, 'checkMessageQueue']);
                 }
+                break;
+            case static::OP_HEARTBEAT_ACK:
+                $this->lastAck = true;
                 break;
             case static::OP_MESSAGE:
                 $this->parseEvent($js['t'], $js['d']);
