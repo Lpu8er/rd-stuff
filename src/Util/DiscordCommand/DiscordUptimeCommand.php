@@ -2,6 +2,8 @@
 namespace App\Util\DiscordCommand;
 
 use App\Service\Discord;
+use DateInterval;
+use DateTime;
 
 /**
  * Description of DiscordUptimeCommand
