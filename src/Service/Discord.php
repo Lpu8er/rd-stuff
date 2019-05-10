@@ -40,7 +40,10 @@ class Discord {
     const EVENT_TYPING_START = 'TYPING_START';
     const EVENT_MESSAGE_CREATE = 'MESSAGE_CREATE';
     const EVENT_MESSAGE_UPDATE = 'MESSAGE_UPDATE';
+    const EVENT_MESSAGE_DELETE = 'MESSAGE_DELETE';
     const EVENT_PRESENCE_UPDATE = 'PRESENCE_UPDATE';
+    const EVENT_MESSAGE_REACTION_ADD = 'MESSAGE_REACTION_ADD';
+    const EVENT_CHANNEL_PINS_UPDATE = 'CHANNEL_PINS_UPDATE';
     
     const INTERVAL_MESSAGEQUEUES = 10;
     
@@ -158,6 +161,18 @@ class Discord {
     protected $logger = null;
     
     /**
+     *
+     * @var DateTime
+     */
+    protected $startDate = null;
+    
+    /**
+     *
+     * @var DateTime
+     */
+    protected $connectionDate = null;
+    
+    /**
      * 
      * @param string $uri
      * @param string $token
@@ -173,6 +188,23 @@ class Discord {
         $this->allowedCommands = $allowedCommands;
         $this->aliases = $aliases;
         $this->logger = $logger;
+        $this->startDate = new DateTime;
+    }
+    
+    /**
+     * 
+     * @return DateTime
+     */
+    public function getStartDate(): DateTime {
+        return $this->startDate;
+    }
+    
+    /**
+     * 
+     * @return ?DateTime
+     */
+    public function getConnectionDate(): ?DateTime {
+        return $this->connectionDate;
     }
     
     /**
@@ -258,11 +290,16 @@ class Discord {
         $this->ws->close();
     }
     
+    public function kill() {
+        $this->loop->stop();
+    }
+    
     /**
      * 
      * @param WebSocket $conn
      */
     public function onConnect(WebSocket $conn) {
+        $this->connectionDate = new DateTime;
         $this->ws = $conn;
         $this->ws->on('message', [$this, 'onMessage']);
         $this->ws->on('close', [$this, 'onClose']);
@@ -275,7 +312,7 @@ class Discord {
      */
     public function onClose($code = null, $reason = null) {
         if($code > 1000) { // something gone wrong
-            $this->consoleLog('Connection closed ('.$code.' - '.$reason.')');
+            $this->consoleLog('Connection closed ('.$code.' - '.$reason.') - will resume');
             // try to restart it
             $this->connect()->resume();
         }
@@ -333,6 +370,9 @@ class Discord {
                 $this->consoleLog('Starting resume process by opcode reconnect received');
                 $this->connect()->resume();
                 break;
+            default:
+                $this->consoleLog('RECEIVED UNKNOWN OPCODE (trace below)');
+                $this->consoleLog(var_export($literal, true));
         }
     }
     
@@ -352,7 +392,23 @@ class Discord {
             }
         } elseif(static::EVENT_MESSAGE_CREATE === $event) {
             $this->parseMessage($data);
-        } elseif(in_array($event, [static::EVENT_PRESENCE_UPDATE, static::EVENT_TYPING_START, static::EVENT_MESSAGE_UPDATE,])) { // ignored events
+        } elseif(in_array($event, [static::EVENT_PRESENCE_UPDATE, static::EVENT_TYPING_START, static::EVENT_MESSAGE_UPDATE, static::EVENT_MESSAGE_REACTION_ADD,])) { // ignored events
+            
+            /*
+            array (
+  'user_id' => '217639688809218049',
+  'message_id' => '575664110146945026',
+  'emoji' => 
+  array (
+    'name' => '🇪',
+    'id' => NULL,
+    'animated' => false,
+  ),
+  'channel_id' => '456142079123259413',
+  'guild_id' => '263117685532000257',
+)
+
+            */
             
         } else { // monitored events
             $this->consoleLog('Received event "'.$event.'" (trace below)');

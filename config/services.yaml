@@ -56,6 +56,7 @@ services:
                 - w
                 - leaderboard
                 - lb
+                - uptime
             $aliases:
                 hi: hello
                 d: dice
