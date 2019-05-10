@@ -372,7 +372,7 @@ class Discord {
                 break;
             default:
                 $this->consoleLog('RECEIVED UNKNOWN OPCODE (trace below)');
-                $this->consoleLog(var_export($literal, true));
+                $this->consoleLog(var_export($js, true));
         }
     }
     
