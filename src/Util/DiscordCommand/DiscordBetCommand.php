@@ -16,7 +16,7 @@ class DiscordBetCommand extends DiscordCommand {
         $msg.= PHP_EOL;
         $msg.= 'Near match (+/-5) :second_place: : `<amount> * 2` :euro:';
         $msg.= PHP_EOL;
-        $msg.= 'Lucky strike (one number) :shield: : `<amount> * 1` :euro:';
+        $msg.= 'Lucky strike (comparison of the tens digit or unit digit) :shield: : `<amount> * 1` :euro:';
         $discordService->talk($msg, $this->data['channel_id']);
     }
     
