@@ -28,6 +28,12 @@ class HangmanUser {
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $user;
+    
+    public function __construct(Hangman $hangman, DiscordUser $user)
+    {
+        $this->hangman = $hangman;
+        $this->user = $user;
+    }
 
     public function getHangman(): ?Hangman
     {

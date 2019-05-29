@@ -5,6 +5,7 @@ use App\Entity\DiscordUser;
 use App\Entity\Hangman;
 use App\Entity\HangmanUser;
 use App\Service\Discord;
+use Exception;
 
 /**
  * Description of DiscordHangmanCommand
@@ -95,11 +96,9 @@ class DiscordHangmanCommand extends DiscordCommand {
      */
     protected function appendUser(Discord $discordService, Hangman $h, DiscordUser $u) {
         $hur = $discordService->getEntityManager()->getRepository(HangmanUser::class);
-        $hu = $hur->find(['hangman_id' => $h->getId(), 'user_id' => $u->getId(),]);
+        $hu = $hur->find(['hangman' => $h->getId(), 'user' => $u->getId(),]);
         if(empty($hu)) {
-            $hu = new HangmanUser;
-            $hu->setHangman($h);
-            $hu->setUser($u);
+            $hu = new HangmanUser($h, $u);
             $discordService->getEntityManager()->persist($hu);
             $discordService->getEntityManager()->flush();
         }
