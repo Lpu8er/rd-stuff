@@ -13,7 +13,7 @@ use DateTime;
 class DiscordDailyCommand extends DiscordCommand {
     const MONEYDINERO = 100; // @TODO
     const STRIKE_NB = 5;
-    const STRIKE_DERIV = 0.2;
+    const STRIKE_DERIV = 20; // % of deriv
     
     public function help(Discord $discordService) {
         $discordService->talk('`.daily` give you some money once a day. *There is a bonus strike if you do it really daily !*', $this->data['channel_id']);
@@ -36,7 +36,7 @@ class DiscordDailyCommand extends DiscordCommand {
                         $strk = true;
                         $dst++;
                         if(static::STRIKE_NB <= $dst) { // strike complete !
-                            $bonus = round(static::MONEYDINERO * mt_rand(1 - static::STRIKE_DERIV, 1 + static::STRIKE_DERIV), 2);
+                            $bonus = round(static::MONEYDINERO * (mt_rand(100 - static::STRIKE_DERIV, 100 + static::STRIKE_DERIV) / 100), 2);
                             $u->setDailyStrike(0);
                         } else {
                             $u->setDailyStrike($dst);
@@ -55,7 +55,7 @@ class DiscordDailyCommand extends DiscordCommand {
                     for($i = 0; $i < $dst; $i++) {
                         $msg .= ' :regional_indicator_'.$strokes[$i].': ';
                     }
-                    if(5 <= $dst) {
+                    if(static::STRIKE_NB <= $dst) {
                         $msg .= ' Strike complete ! You won a '.number_format($bonus, 2).' :euro: bonus !';
                     }
                     $discordService->talk($msg);
