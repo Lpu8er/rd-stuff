@@ -52,7 +52,7 @@ class DiscordHangmanCommand extends DiscordCommand {
                         $msg[] = $h->getFunDiscovered();
                         if(Hangman::SUCCESS & $cres) {
                             // hop là, give money
-                            $parts = $hrep->findBy(['hangman_id' => $h->getId(),]);
+                            $parts = $hrep->findBy(['hangman' => $h,]);
                             $partsNames = []; $indReward = floor(static::REWARD / count($parts));
                             foreach ($parts as $part) {
                                 $pu = $part->getUser();
