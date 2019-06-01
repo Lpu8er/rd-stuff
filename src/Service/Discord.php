@@ -462,6 +462,7 @@ class Discord {
                 }
             } catch (Exception $ex) {
                 $this->logger->critical($ex->getMessage());
+                $this->logger->critical($ex->getTraceAsString());
                 $this->talk('An error occured, please retry later', $pureData['channel_id']);
             }
         } else {
