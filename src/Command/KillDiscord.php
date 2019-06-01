@@ -36,7 +36,7 @@ class KillDiscord extends Command {
     protected function cleanup() {
         $hs = $this->em->getRepository(Hangman::class)->findAll();
         foreach($hs as $h) {
-            $this->em->persist($h);
+            $this->em->remove($h);
             $this->em->flush();
         }
     }
