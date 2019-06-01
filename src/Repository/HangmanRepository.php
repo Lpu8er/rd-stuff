@@ -54,6 +54,12 @@ class HangmanRepository extends ServiceEntityRepository
     }
     
     public function blast(Hangman $h) {
+        // because doctrine is shit
+        $parts = $this->retrieveHangmanUsersByHangman($h);
+        foreach($parts as $part) {
+            $this->_em->remove($part);
+            $this->_em->flush();
+        }
         $this->_em->remove($h);
         $this->_em->flush();
     }
