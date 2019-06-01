@@ -52,11 +52,11 @@ class DiscordHangmanCommand extends DiscordCommand {
                         $msg[] = $h->getFunDiscovered();
                         if(Hangman::SUCCESS & $cres) {
                             // hop là, give money
-                            $parts = $hrep->findBy(['hangman' => $h->getId(),]);
+                            $parts = $hrep->retrieveHangmanUsersByHangman($h);
                             $partsNames = []; $indReward = floor(static::REWARD / count($parts));
                             foreach ($parts as $part) {
                                 $pu = $part->getUser();
-                                $partsNames[] = $pu->getName();
+                                $partsNames[] = $pu->getDiscordName();
                                 $pu->setMoney($pu->getMoney() + $indReward);
                                 $discordService->saveUser($pu);
                             }

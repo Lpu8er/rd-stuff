@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Hangman;
+use App\Entity\HangmanUser;
 use App\Entity\Word;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -88,5 +89,14 @@ class HangmanRepository extends ServiceEntityRepository
         $this->_em->persist($h);
         $this->_em->flush();
         return $returns;
+    }
+    
+    /**
+     * 
+     * @param Hangman $h
+     * @return HangmanUser[]
+     */
+    public function retrieveHangmanUsersByHangman(Hangman $h): array {
+        return $this->_em->getRepository(HangmanUser::class)->findBy(['hangman' => $h->getId(),]);
     }
 }
