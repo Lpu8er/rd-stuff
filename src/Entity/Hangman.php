@@ -127,4 +127,8 @@ class Hangman {
         }
         return $returns;
     }
+    
+    public function __toString() {
+        return strval($this->getId());
+    }
 }

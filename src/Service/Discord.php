@@ -406,22 +406,6 @@ class Discord {
             $this->parseMessage($data);
         } elseif(in_array($event, [static::EVENT_PRESENCE_UPDATE, static::EVENT_TYPING_START, static::EVENT_MESSAGE_UPDATE, static::EVENT_MESSAGE_REACTION_ADD,])) { // ignored events
             
-            /*
-            array (
-  'user_id' => '217639688809218049',
-  'message_id' => '575664110146945026',
-  'emoji' => 
-  array (
-    'name' => '🇪',
-    'id' => NULL,
-    'animated' => false,
-  ),
-  'channel_id' => '456142079123259413',
-  'guild_id' => '263117685532000257',
-)
-
-            */
-            
         } else { // monitored events
             $this->consoleLog('Received event "'.$event.'" (trace below)');
             $this->consoleLog(var_export($data, true));
