@@ -42,7 +42,7 @@ class HangmanRepository extends ServiceEntityRepository
         $h->setDiscovered(preg_replace('`[a-zA-Z]`', '-', $w));
         $this->_em->persist($h);
         $this->_em->flush();
-        return $h;
+        return $this->_em->find($h->getId());
     }
     
     public function findOrCreate(): Hangman {
