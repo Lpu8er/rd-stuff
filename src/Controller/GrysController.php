@@ -30,7 +30,7 @@ class GrysController extends Controller {
             $path = $bp.'/'.$f;
             $returns = $this->file($path);
         } else {
-            $retuns = $this->home($request, $logger);
+            $returns = $this->home($request, $logger);
         }
         return $returns;
     }
