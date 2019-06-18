@@ -6,17 +6,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Description of HomeController
+ * Description of GrysController
  *
  * @author lpu8er
  * @Route("/")
  */
-class HomeController extends Controller {
+class GrysController extends Controller {
     /**
-     * @Route("/", name="rd_default", host="lpu8er.net")
+     * @Route("/", name="grys_default", host="grys.ovh")
      * 
      */
     public function home(Request $request, \Psr\Log\LoggerInterface $logger) {
-        return $this->render('home.html.twig');
+        return $this->render('grys.html.twig');
     }
 }
