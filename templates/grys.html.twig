@@ -10,6 +10,11 @@
             <p>
                 XIV
             </p>
+            {%  for e in err %}
+                <p>
+                    {{ e }}
+                </p>
+            {% endfor %}
         {% endblock %}
         {% block javascripts %}{% endblock %}
     </body>

@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,14 @@ use Symfony\Component\Routing\Annotation\Route;
  * @Route("/")
  */
 class GrysController extends Controller {
+    protected $err = [];
+    
     /**
      * @Route("/", name="grys_default", host="grys.ovh")
      * 
      */
     public function home(Request $request) {
-        return $this->render('grys.html.twig');
+        return $this->render('grys.html.twig', ['err' => $err,]);
     }
     
     /**
@@ -26,18 +29,26 @@ class GrysController extends Controller {
      * 
      */
     public function dl(Request $request, $f) {
-        $bp = $this->getParameter('dir.downloads');
-        if(!empty($bp) && !empty($f) && preg_match('`^([a-zA-Z0-9_-]+)\.([a-z]+)$`iU', $f)) {
-            $path = $bp.'/'.$f;
-            $ff = new File($path);
-            if($ff->isFile()) {
-                $returns = $this->file($path);
+        try {
+            $bp = $this->getParameter('dir.downloads');
+            if(!empty($bp) && !empty($f) && preg_match('`^([a-zA-Z0-9_-]+)\.([a-z]+)$`iU', $f)) {
+                $path = $bp.'/'.$f;
+                $ff = new File($path);
+                if($ff->isFile()) {
+                    $this->err[] = 'Found';
+                    //$returns = $this->file($path);
+                } else {
+                    $this->err[] = 'Not found';
+                    //$returns = $this->createNotFoundException('File "'.$path.'" not found');
+                }
             } else {
-                $returns = $this->createNotFoundException('File "'.$path.'" not found');
+                $this->err[] = 'Dafuq';
+                //$returns = $this->home($request, $logger);
             }
-        } else {
-            $returns = $this->home($request, $logger);
+        } catch(Exception $e) {
+            $this->err[] = $e->getMessage();
+            //$returns = $this->home($request, $logger);
         }
-        return $returns;
+        return $this->render('grys.html.twig', ['err' => $err,]);
     }
 }
