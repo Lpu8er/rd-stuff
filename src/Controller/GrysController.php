@@ -30,25 +30,24 @@ class GrysController extends Controller {
      */
     public function dl(Request $request, $f) {
         try {
-            $bp = $this->getParameter('dir.downloads');
+            $bp = $this->getParameter('kernel.project_dir').'/'.$this->getParameter('dir.downloads');
             if(!empty($bp) && !empty($f) && preg_match('`^([a-zA-Z0-9_-]+)\.([a-z]+)$`iU', $f)) {
                 $path = $bp.'/'.$f;
                 $ff = new File($path);
                 if($ff->isFile()) {
-                    $this->err[] = 'Found';
-                    //$returns = $this->file($path);
+                    $returns = $this->file($path);
                 } else {
                     $this->err[] = 'Not found';
-                    //$returns = $this->createNotFoundException('File "'.$path.'" not found');
+                    $returns = $this->home($request, $logger);
                 }
             } else {
-                $this->err[] = 'Dafuq';
-                //$returns = $this->home($request, $logger);
+                $this->err[] = 'Invalid file';
+                $returns = $this->home($request, $logger);
             }
         } catch(Exception $e) {
             $this->err[] = $e->getMessage();
-            //$returns = $this->home($request, $logger);
+            $returns = $this->home($request, $logger);
         }
-        return $this->render('grys.html.twig', ['err' => $this->err,]);
+        return $returns;
     }
 }
