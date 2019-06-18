@@ -21,7 +21,7 @@ class GrysController extends Controller {
      * 
      */
     public function home(Request $request) {
-        return $this->render('grys.html.twig', ['err' => $err,]);
+        return $this->render('grys.html.twig', ['err' => $this->err,]);
     }
     
     /**
@@ -49,6 +49,6 @@ class GrysController extends Controller {
             $this->err[] = $e->getMessage();
             //$returns = $this->home($request, $logger);
         }
-        return $this->render('grys.html.twig', ['err' => $err,]);
+        return $this->render('grys.html.twig', ['err' => $this->err,]);
     }
 }
