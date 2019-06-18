@@ -1,6 +1,16 @@
-{% extends 'base.html.twig' %}
-{% block body %}
-<p>
-    XIV
-</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        {% block body %}
+            <p>
+                XIV
+            </p>
+        {% endblock %}
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>
