@@ -1,7 +1,6 @@
 <?php
 namespace App\Controller;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +17,7 @@ class GrysController extends Controller {
      * @Route("/", name="grys_default", host="grys.ovh")
      * 
      */
-    public function home(Request $request, LoggerInterface $logger) {
+    public function home(Request $request) {
         return $this->render('grys.html.twig');
     }
     
@@ -26,7 +25,7 @@ class GrysController extends Controller {
      * @Route("/dl/{f}", name="grys_dl", host="grys.ovh")
      * 
      */
-    public function dl(Request $request, LoggerInterface $logger, $f) {
+    public function dl(Request $request, $f) {
         $bp = $this->getParameter('dir.downloads');
         if(!empty($bp) && !empty($f) && preg_match('`^([a-zA-Z0-9_-]+)\.([a-z]+)$`iU', $f)) {
             $path = $bp.'/'.$f;
