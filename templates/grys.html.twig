@@ -7,9 +7,19 @@
     </head>
     <body>
         {% block body %}
+            <h1>CHASSEL Quentin</h1>
             <p>
-                XIV
+                Cette page a été réalisée par mes soins, pour le CAPET.
+                Elle contient des liens directs vers les ressources qui me sont
+                utiles (peu, car à force, j'ai fini par être habitué à en chercher et réaliser).
             </p>
+            <ul>
+                <li>
+                    <a href="{{ path('grys_dl', {'f': 'model.docx'}) }}">
+                        model.docx
+                    </a>
+                </li>
+            </ul>
             {%  for e in err %}
                 <p>
                     {{ e }}
